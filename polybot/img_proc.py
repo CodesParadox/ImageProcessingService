@@ -1,5 +1,6 @@
 from pathlib import Path
 from matplotlib.image import imread, imsave
+import random
 
 
 def rgb2gray(rgb):
@@ -50,18 +51,60 @@ class Img:
 
             self.data[i] = res
 
-    def rotate(self):
-        # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
-
-    def salt_n_pepper(self):
-        # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
-
+# concat function
     def concat(self, other_img, direction='horizontal'):
-        # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        # if direction == 'horizontal':
+        #     self.concat_horizontal(other_img)
+        # elif direction == 'vertical':
+        #     self.concat_vertical(other_img)
+        # else:
+        #     raise RuntimeError("Invalid direction for concatenation. Must be 'horizontal' or 'vertical'.")
+        if direction == 'horizontal':
+            if len(self.data) != len(other_img.data):
+                raise RuntimeError("Images must have the same height for horizontal concatenation")
+            self.data = [row1 + row2 for row1, row2 in zip(self.data, other_img.data)]
+        elif direction == 'vertical':
+            if len(self.data[0]) != len(other_img.data[0]):
+                raise RuntimeError("Images must have the same width for vertical concatenation")
+            self.data += other_img.data
+        else:
+            raise RuntimeError("Invalid direction for concatenation. Must be 'horizontal' or 'vertical'.")
+
+# # Helper function for concat function. Concatenate the other_img to the right of the current image
+#     def concat_horizontal(self, other_img):
+#         if len(self.data) != len(other_img.data):
+#             raise RuntimeError("Images must have the same height for horizontal concatenation")
+#         #use zip to concatenate the rows of the two images
+#         self.data = [row1 + row2 for row1, row2 in zip(self.data, other_img.data)]
+#
+#     # Helper function for concat function. Concatenate the other_img to the bottom of the current image
+#     def concat_vertical(self, other_img):
+#        if len(self.data[0]) != len(other_img.data[0]):
+#               raise RuntimeError("Images must have the same width for vertical concatenation")
+#          #use the + operator to concatenate the two images
+#          self.data += other_img.data
+
+    def rotate(self):
+        if not self.data:
+            raise RuntimeError("Image data is empty")
+        self.data = [list(row) for row in zip(*self.data[::-1])]
+
+    def salt_n_pepper(self, salt_prob=0.05, pepper_prob=0.05):
+        height = len(self.data)
+        width = len(self.data[0])
+        for i in range(height):
+            for j in range(width):
+                rand = random.random()
+                if rand < salt_prob:
+                    self.data[i][j] = 255
+                elif rand < salt_prob + pepper_prob:
+                    self.data[i][j] = 0
 
     def segment(self):
-        # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        if not self.data:
+            raise RuntimeError("Image data is empty")
+        total_pixels = sum(sum(row) for row in self.data)
+        average = total_pixels // (len(self.data) * len(self.data[0]))
+        for i, row in enumerate(self.data):
+            self.data[i] = [0 if pixel < average else 255 for pixel in row]
+
