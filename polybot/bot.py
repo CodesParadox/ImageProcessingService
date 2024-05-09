@@ -66,6 +66,7 @@ class Bot:
         self.send_text(msg['chat']['id'], f'Your original message: {msg["text"]}')
 
 
+
 class QuoteBot(Bot):
     def handle_message(self, msg):
         logger.info(f'Incoming message: {msg}')
@@ -75,4 +76,23 @@ class QuoteBot(Bot):
 
 
 class ImageProcessingBot(Bot):
-    pass
+    def handle_message(self, msg):
+        logger.info(f'Incoming message: {msg}')
+
+        if self.is_current_msg_photo(msg):
+            img_path = self.download_user_photo(msg)
+            img = Img(img_path)
+            img.rotate()
+            img.salt_n_pepper()
+            img_path = 'rotated_' + img_path
+            img.save(img_path)
+            self.send_photo(msg['chat']['id'], img_path)
+        else:
+            self.send_text(msg['chat']['id'], 'Please send a photo')
+        #save the filtered image to a new file
+        filtered_img_path = img.save_img()
+        #send the filtered image to the user
+        self.send_photo(msg['chat']['id'], filtered_img_path)
+
+
+
